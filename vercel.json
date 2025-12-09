@@ -1,1 +1,15 @@
-
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/ingredients.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/ingredients",
+      "dest": "/api/ingredients.js"
+    }
+  ]
+}
