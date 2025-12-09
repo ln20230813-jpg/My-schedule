@@ -5,23 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ingredient Expiry Tracker Client</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .container { display: flex; gap: 20px; }
-        #addForm { border: 1px solid #ccc; padding: 15px; border-radius: 5px; flex: 1; }
-        #results { border: 1px solid #ccc; padding: 15px; border-radius: 5px; flex: 2; }
-        input[type="text"], input[type="date"], button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { opacity: 0.9; }
-        h3 { margin-top: 0; }
-        pre { background-color: #eee; padding: 10px; overflow-x: auto; }
-        .ingredient-item { border-bottom: 1px dashed #ddd; padding: 10px 0; }
+        /* Basic Styling for the App */
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f7f7f7;
+        }
+        h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        .container { 
+            display: flex; 
+            gap: 30px; 
+            margin-top: 20px;
+        }
+        #addForm, #results { 
+            background: white;
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            min-height: 300px;
+        }
+        #addForm { flex: 1; }
+        #results { flex: 2; }
+        
+        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="date"] { 
+            padding: 10px; 
+            margin: 5px 0 15px 0; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        button { 
+            padding: 10px 15px;
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover { 
+            background-color: #45a049; 
+        }
+        h3 { margin-top: 0; color: #4CAF50; }
+        .ingredient-item { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee; 
+            padding: 10px 0;
+        }
         .ingredient-item:last-child { border-bottom: none; }
+        .expiry-date { font-weight: bold; }
+        .expired { color: red; }
+        .fresh { color: green; }
     </style>
 </head>
 <body>
     <h1>🍲 Ingredient Expiry Tracker</h1>
 
-    <p>This page uses **Fetch API** to interact with the Vercel serverless function at `/api/ingredients`.</p>
+    <p>Use the form to add ingredients and click "Refresh List" to load items from the Vercel API endpoint (`/api/ingredients`).</p>
+    
     <div class="container">
         
         <div id="addForm">
@@ -29,27 +77,27 @@
             <label for="name">Name:</label>
             <input type="text" id="name" placeholder="e.g., Flour" required>
 
-            <label for="amount">Amount:</label>
-            <input type="text" id="amount" placeholder="e.g., 500g" required>
+            <label for="amount">Amount/Quantity:</label>
+            <input type="text" id="amount" placeholder="e.g., 500g, 1 Dozen" required>
 
             <label for="expiryDate">Expiry Date:</label>
             <input type="date" id="expiryDate" required>
 
-            <button onclick="postIngredient()">Add Ingredient</button>
-            <p id="postStatus"></p>
+            <button onclick="postIngredient()">➕ Add Ingredient</button>
+            <p id="postStatus" style="margin-top: 15px;"></p>
         </div>
 
         <div id="results">
             <h3>Current Ingredients (GET)</h3>
-            <button onclick="getIngredients()">Refresh List</button>
-            <div id="ingredientList">
+            <button onclick="getIngredients()">🔄 Refresh List</button>
+            <div id="ingredientList" style="margin-top: 15px;">
                 <p>Click "Refresh List" to load ingredients.</p>
             </div>
         </div>
     </div>
     
     <script>
-        // Use the relative path when deployed on Vercel
+        // Use the relative path for Vercel deployment
         const API_URL = '/api/ingredients'; 
 
         // --- GET Ingredients ---
@@ -61,13 +109,13 @@
                 const response = await fetch(API_URL);
                 const data = await response.json();
 
-                if (data.success) {
+                if (response.ok && data.success) {
                     renderIngredients(data.data);
                 } else {
-                    listDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                    listDiv.innerHTML = `<p style="color: red;">Error fetching data: ${data.error || 'Server error.'}</p>`;
                 }
             } catch (error) {
-                listDiv.innerHTML = `<p style="color: red;">Failed to fetch ingredients. Check your network or Vercel deployment.</p>`;
+                listDiv.innerHTML = `<p style="color: red;">Failed to connect to API. Check console.</p>`;
                 console.error('Fetch error:', error);
             }
         }
@@ -75,23 +123,33 @@
         function renderIngredients(ingredients) {
             const listDiv = document.getElementById('ingredientList');
             if (ingredients.length === 0) {
-                listDiv.innerHTML = '<p>No ingredients found. Add one!</p>';
+                listDiv.innerHTML = '<p>No ingredients found. Add one above!</p>';
                 return;
             }
 
-            listDiv.innerHTML = ingredients.map(item => `
-                <div class="ingredient-item">
-                    <strong>${item.name}</strong> (${item.amount})<br>
-                    Expires: <span style="color: ${isExpired(item.expiryDate) ? 'red' : 'green'};">
-                        ${item.expiryDate} ${isExpired(item.expiryDate) ? '(EXPIRED)' : ''}
-                    </span>
-                </div>
-            `).join('');
+            listDiv.innerHTML = ingredients.map(item => {
+                const expired = isExpired(item.expiryDate);
+                const statusClass = expired ? 'expired' : 'fresh';
+                const statusText = expired ? '(EXPIRED)' : '';
+                
+                return `
+                    <div class="ingredient-item">
+                        <div>
+                            <strong>${item.name}</strong> (${item.amount})<br>
+                            <small>Added: ${item.addedOn}</small>
+                        </div>
+                        <div class="expiry-date ${statusClass}">
+                            Expires: ${item.expiryDate} ${statusText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function isExpired(dateString) {
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Normalize today to midnight
+            // Normalize today to midnight for comparison accuracy
+            today.setHours(0, 0, 0, 0); 
             const expiry = new Date(dateString);
             return expiry < today;
         }
@@ -103,6 +161,13 @@
             const expiryDate = document.getElementById('expiryDate').value;
             const statusP = document.getElementById('postStatus');
 
+            // Simple client-side validation
+            if (!name || !amount || !expiryDate) {
+                statusP.style.color = 'orange';
+                statusP.textContent = 'Please fill out all fields.';
+                return;
+            }
+            
             statusP.style.color = 'black';
             statusP.textContent = 'Submitting...';
 
@@ -112,6 +177,7 @@
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
+                        // CRITICAL: Must specify Content-Type as JSON
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload)
@@ -121,22 +187,28 @@
 
                 if (response.status === 201 && data.success) {
                     statusP.style.color = 'green';
-                    statusP.textContent = `Success! Added: ${data.data.name}`;
-                    // Refresh the list after successful post
+                    statusP.textContent = `✅ Success! Added: ${data.data.name}`;
+                    // Clear form and refresh list
+                    document.getElementById('name').value = '';
+                    document.getElementById('amount').value = '';
+                    document.getElementById('expiryDate').value = '';
                     getIngredients(); 
                 } else if (response.status === 400 && !data.success) {
                     statusP.style.color = 'red';
-                    statusP.textContent = `Error: ${data.error}`;
+                    statusP.textContent = `❌ Error: ${data.error}`;
                 } else {
                     statusP.style.color = 'red';
                     statusP.textContent = `An unknown error occurred. Status: ${response.status}`;
                 }
             } catch (error) {
                 statusP.style.color = 'red';
-                statusP.textContent = `Post failed. Check console.`;
+                statusP.textContent = `Post failed. Check console for details.`;
                 console.error('Post error:', error);
             }
         }
+
+        // Load ingredients on page load
+        document.addEventListener('DOMContentLoaded', getIngredients);
     </script>
 </body>
 </html>
