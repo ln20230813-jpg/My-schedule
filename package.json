@@ -4,12 +4,14 @@
   "description": "Serverless API for tracking ingredient expiry dates on Vercel.",
   "main": "api/ingredients.js",
   "scripts": {
-    "start": "echo 'This project is designed to be deployed on Vercel or run with vercel dev'"
+    "start": "vercel dev",
+    "dev": "vercel dev"
   },
   "keywords": [
     "vercel",
     "serverless",
-    "api"
+    "api",
+    "node"
   ],
   "author": "",
   "license": "ISC"
