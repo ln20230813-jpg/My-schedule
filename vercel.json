@@ -9,7 +9,8 @@
   "routes": [
     {
       "src": "/api/ingredients",
-      "dest": "/api/ingredients.js"
+      "dest": "api/ingredients.js",
+      "methods": ["GET", "POST", "OPTIONS"]
     }
   ]
 }
