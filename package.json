@@ -1,1 +1,17 @@
-
+{
+  "name": "ingredient-expiry-tracker-api",
+  "version": "1.0.0",
+  "description": "Serverless API for an Ingredient Expiry Tracker.",
+  "main": "api/ingredients.js",
+  "scripts": {
+    "start": "echo 'This is a serverless project. Deploy to Vercel to run.'",
+    "test": "echo 'Error: no test specified' && exit 1"
+  },
+  "keywords": [
+    "vercel",
+    "serverless",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC"
+}
